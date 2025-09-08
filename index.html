@@ -160,30 +160,29 @@
         document.getElementById("loadingDots").style.display = "none";
       }
     }
+function addMessage(text, sender) {
+  const chatWindow = document.getElementById("chatWindow");
 
-    function addMessage(text, sender) {
-      const chatWindow = document.getElementById("chatWindow");
+  const row = document.createElement("div");
+  row.className = "message";
 
-      const row = document.createElement("div");
-      row.className = `message ${sender}`;
+  // Avatar fijo (Rito siempre)
+  const avatar = document.createElement("img");
+  avatar.className = "avatar";
+  avatar.src = AVATAR_BOT_SRC;
+  avatar.alt = "Rito";
 
-      // Avatar
-      const avatar = document.createElement("img");
-      avatar.className = "avatar";
-      if (sender === "bot") {
-        avatar.src = AVATAR_BOT_SRC;
-        avatar.alt = "Rito";
-      } else {
-        if (AVATAR_USER_SRC) {
-          avatar.src = AVATAR_USER_SRC;
-          avatar.alt = "Usuario";
-        } else {
-          // fallback: circulito con emoji
-          avatar.classList.add("avatar-fallback");
-          avatar.alt = "Usuario";
-          avatar.dataset.emoji = "🧑";
-        }
-      }
+  // Bocadillo
+  const bubble = document.createElement("div");
+  bubble.className = `bubble ${sender}`; // añade clase "user" o "bot"
+  bubble.textContent = text;
+
+  row.appendChild(avatar);
+  row.appendChild(bubble);
+
+  chatWindow.appendChild(row);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+}
 
       // Bocadillo
       const bubble = document.createElement("div");
@@ -233,6 +232,7 @@
   </script>
 </body>
 </html>
+
 
 
 
