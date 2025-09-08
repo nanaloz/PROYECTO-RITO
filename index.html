@@ -2,57 +2,9 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="hojadeestilo.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Chat con Voz</title>
-  <style>
-    .typing-dots {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 30px;
-      gap: 5px;
-      margin: 10px auto;
-    }
-
-    .typing-dots span {
-      width: 10px;
-      height: 10px;
-      background-color: black;
-      border-radius: 50%;
-      animation: blink 1.4s infinite both;
-    }
-
-    .typing-dots span:nth-child(2) {
-      animation-delay: 0.2s;
-    }
-
-    .typing-dots span:nth-child(3) {
-      animation-delay: 0.4s;
-    }
-
-    @keyframes blink {
-      0%, 80%, 100% { opacity: 0; transform: scale(0.9); }
-      40% { opacity: 1; transform: scale(1.2); }
-    }
-
-    /* Botón detener voz con animación */
-    .boton-detener {
-      background-color: #ffcccc;
-      color: #b30000;
-      font-weight: bold;
-      transition: opacity 0.4s ease, transform 0.4s ease;
-      opacity: 1;
-      transform: scale(1);
-      display: inline-block;
-    }
-
-    .boton-detener.oculto {
-      opacity: 0;
-      transform: scale(0.8);
-      pointer-events: none;
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="page-wrapper">
@@ -64,14 +16,15 @@
       </div>
 
       <!-- Campo de texto -->
-      <input type="text" id="textInput" placeholder="Pregunta algo..." />
+      <input type="text" id="textInput" placeholder="Hazme una pregunta..." />
 
       <!-- Botones y configuración -->
       <div class="button-group">
         <button onclick="startRecognition()">🎙 Hablar</button>
 
         <div class="config-wrapper">
-          <img src="img/boton-configuracion.png" alt="Configuración" class="icono-configuracion" onclick="toggleMenu()" />
+          <img src="img/boton-configuracion.png" alt="Configuración"
+               class="icono-configuracion" onclick="toggleMenu()" />
           <div id="menuOpciones" class="menu-opciones">
             <label><input type="checkbox" id="toggleVoz" checked onchange="toggleVoz()"> Activar la función de reproducir voz</label>
             <hr>
@@ -91,18 +44,18 @@
 
         <button onclick="sendMessage()">📩 Enviar</button>
       </div>
+
+      <!-- Zona de chat -->
+      <div id="chatWindow" class="chat-window"></div>
+
       <!-- Indicador de carga -->
-      <div id="loadingDots" class="typing-dots" style="display: none;">
+      <div id="loadingDots" class="typing-dots" style="display:none;">
         <span></span><span></span><span></span>
       </div>
 
-      <!-- Cuadro de respuesta -->
-      <div class="respuesta-cuadro">
-        <div class="fila-derecha">
-           <button id="btnDetenerVoz" class="boton-detener oculto" onclick="detenerVoz()">⏹ Detener voz</button>
-        </div>
-        <h3>Respuesta:</h3>
-        <p id="responseText" class="response"></p>
+      <!-- Botón detener voz -->
+      <div class="fila-derecha">
+        <button id="btnDetenerVoz" class="boton-detener oculto" onclick="detenerVoz()">⏹ Detener voz</button>
       </div>
 
       <!-- Imágenes inferiores -->
@@ -121,7 +74,7 @@
     </footer>
   </div>
 
-  <!-- Scripts -->
+  <!-- Script de voz -->
   <script>
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = SpeechRecognition ? new SpeechRecognition() : null;
@@ -141,26 +94,8 @@
           const input = document.getElementById("textInput");
           input.value = input.value.trim() !== "" ? input.value + " " + transcript : transcript;
         };
-
-        recognition.onerror = (event) => {
-          console.error("Error de reconocimiento:", event.error);
-          micActivo = false;
-        };
       }
 
-      const savedSpeed = localStorage.getItem("velocidad");
-      if (savedSpeed) {
-        velocidad = parseFloat(savedSpeed);
-        document.getElementById("velocidad").value = velocidad;
-        document.getElementById("velocidadValor").textContent = velocidad;
-      }
-
-      const vozActivada = localStorage.getItem("vozActivada");
-      if (vozActivada !== null) {
-        reproducirVoz = vozActivada === "true";
-        document.getElementById("toggleVoz").checked = reproducirVoz;
-      }
-      
       cargarVoces();
     });
 
@@ -179,13 +114,11 @@
 
     function toggleVoz() {
       reproducirVoz = document.getElementById("toggleVoz").checked;
-      localStorage.setItem("vozActivada", reproducirVoz);
     }
 
     document.getElementById("velocidad").addEventListener("input", function () {
       velocidad = parseFloat(this.value);
       document.getElementById("velocidadValor").textContent = velocidad;
-      localStorage.setItem("velocidad", velocidad);
     });
 
     document.getElementById("idioma").addEventListener("change", function () {
@@ -196,11 +129,9 @@
     function cargarVoces() {
       const voces = window.speechSynthesis.getVoices();
       const select = document.getElementById("selectVoz");
-      if (!select) return;
       select.innerHTML = "";
 
       const vocesFiltradas = voces.filter(voz =>
-        (voz.name.includes("Microsoft Laura") || voz.name.includes("Microsoft Pablo")) &&
         voz.lang.startsWith("es")
       );
       vocesFiltradas.forEach((voz, i) => {
@@ -209,19 +140,10 @@
         option.textContent = `${voz.name} (${voz.lang})`;
         select.appendChild(option);
       });
-      
-      const savedIndex = localStorage.getItem("vozIndex");
-      if (savedIndex !== null && vocesFiltradas[savedIndex]) {
-        select.selectedIndex = savedIndex;
-        vozSeleccionada = vocesFiltradas[savedIndex];
-      } else {
-        vozSeleccionada = vocesFiltradas[0] || null;
-      }
-      
+
+      vozSeleccionada = vocesFiltradas[0] || null;
       select.onchange = () => {
         vozSeleccionada = vocesFiltradas[select.selectedIndex];
-        localStorage.setItem("vozIndex", select.selectedIndex);
-        document.getElementById("menuOpciones").style.display = "none";
       };
     }
 
@@ -242,8 +164,10 @@
         micActivo = false;
       }
 
+      // mostrar pregunta como burbuja
+      addMessage(inputValue, "user");
+
       document.getElementById("loadingDots").style.display = "flex";
-      document.getElementById("responseText").innerText = "";
 
       try {
         const response = await fetch("/api/chat", {
@@ -253,24 +177,29 @@
         });
 
         const data = await response.json();
-        let respuestaTexto = data.response
-          ? typeof data.response === "object"
-            ? data.response.message || data.response.content || JSON.stringify(data.response, null, 2)
-            : data.response
-          : "No se recibió una respuesta válida.";
+        let respuestaTexto = data.response || "No se recibió una respuesta válida.";
 
-        displayResponse(respuestaTexto);
+        addMessage(respuestaTexto, "bot");
+        speak(respuestaTexto);
+
       } catch (error) {
         console.error("Error en la API:", error);
-        document.getElementById("responseText").innerText = "No se pudo conectar con la IA.";
+        addMessage("No se pudo conectar con la IA.", "bot");
       } finally {
         document.getElementById("loadingDots").style.display = "none";
       }
     }
 
-    function displayResponse(response) {
-      document.getElementById("responseText").innerText = "Respuesta: " + response;
+    function addMessage(text, sender) {
+      const chatWindow = document.getElementById("chatWindow");
+      const messageDiv = document.createElement("div");
+      messageDiv.classList.add("message", sender);
+      messageDiv.textContent = text;
+      chatWindow.appendChild(messageDiv);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
 
+    function speak(response) {
       if (reproducirVoz && 'speechSynthesis' in window) {
         const synth = window.speechSynthesis;
         const utterance = new SpeechSynthesisUtterance(response);
@@ -278,19 +207,11 @@
         utterance.rate = velocidad;
         if (vozSeleccionada) utterance.voice = vozSeleccionada;
 
-        utterance.onstart = () => {
-          mostrarBotonDetener();
-        };
-
-        utterance.onend = () => {
-          ocultarBotonDetener();
-          if (micActivo) recognition.start();
-        };
+        utterance.onstart = mostrarBotonDetener;
+        utterance.onend = ocultarBotonDetener;
 
         synth.speak(utterance);
       }
-
-      micActivo = false;
     }
 
     function detenerVoz() {
@@ -301,13 +222,11 @@
     }
 
     function mostrarBotonDetener() {
-      const boton = document.getElementById("btnDetenerVoz");
-      boton.classList.remove("oculto");
+      document.getElementById("btnDetenerVoz").classList.remove("oculto");
     }
 
     function ocultarBotonDetener() {
-      const boton = document.getElementById("btnDetenerVoz");
-      boton.classList.add("oculto");
+      document.getElementById("btnDetenerVoz").classList.add("oculto");
     }
 
     window.speechSynthesis.onvoiceschanged = cargarVoces;
