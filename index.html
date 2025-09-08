@@ -12,7 +12,6 @@
       <!-- Cabecera con logos -->
       <div class="top-images">
         <img src="img/logo nuevo.PNG" alt="Asistente IA" class="logo-all" />
-        <img src="img/k+.PNG" alt="Aranzadi La Ley" class="top-image" />
       </div>
 
       <!-- Campo de entrada -->
@@ -21,27 +20,7 @@
       <!-- Controles -->
       <div class="button-group">
         <button onclick="startRecognition()">🎙 Hablar</button>
-
-        <div class="config-wrapper">
-          <img src="img/boton-configuracion.png" alt="Configuración"
-               class="icono-configuracion" onclick="toggleMenu()" />
-          <div id="menuOpciones" class="menu-opciones">
-            <label><input type="checkbox" id="toggleVoz" checked onchange="toggleVoz()"> Activar la función de reproducir voz</label>
-            <hr>
-            <label for="selectVoz">Elección de voz:</label>
-            <select id="selectVoz"></select>
-            <hr>
-            <label for="velocidad">Velocidad de reproducción:</label>
-            <input type="range" id="velocidad" min="0.5" max="2" step="0.1" value="1">
-            <span id="velocidadValor">1</span>
-            <hr>
-            <label for="idioma">Idiomas disponibles:</label>
-            <select id="idioma">
-              <option value="es-ES">Español</option> 
-            </select>
-          </div>
         </div>
-
         <button onclick="sendMessage()">📩 Enviar</button>
       </div>
 
@@ -57,14 +36,6 @@
       <div class="fila-derecha">
         <button id="btnDetenerVoz" class="boton-detener oculto" onclick="detenerVoz()">⏹ Detener voz</button>
       </div>
-
-      <!-- Imágenes inferiores -->
-      <div class="bottom-images">
-        <img src="img/foto Les Novateurs (1).png" alt="Imagen Ilustrativa" class="bottom-image" />
-        <img src="img/Les Novateurs logo.PNG" alt="Equipo de IA" class="mi-imagen" />
-      </div>
-    </div>
-
     <footer>
       <p>
         &copy; 2025 Aranzadi La Ley. Todos los derechos reservados. |
@@ -261,4 +232,5 @@
   </script>
 </body>
 </html>
+
 
