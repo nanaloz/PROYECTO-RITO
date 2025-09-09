@@ -15,7 +15,7 @@ html, body { height:100%; margin:0; padding:0; background:#f4f4f4; font-family:A
 }
 .avatar-wrap { display:flex; justify-content:center; }
 .avatar-fixed {
-  width:110px; height:auto; border-radius:14px; box-shadow:0 6px 16px rgba(0,0,0,.15);
+  width:300px; height:auto; border-radius:14px; box-shadow:0 6px 16px rgba(0,0,0,.15);
   background:#fff;
 }
 
@@ -82,3 +82,4 @@ button:active { transform: translateY(1px); }
 footer { text-align:center; padding:16px; color:#374151; }
 footer a { color:#0066cc; text-decoration:none; }
 footer a:hover { text-decoration:underline; }
+
