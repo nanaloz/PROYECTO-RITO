@@ -9,9 +9,10 @@
 <body>
   <div class="page-wrapper">
     <div class="container">
-      <!-- Logo amarillo ARRIBA -->
+      
+      <!-- Logo proyecto ARRIBA IZQUIERDA -->
       <header class="header">
-        <img src="img/logoproyecto.png" alt="Logo Proyecto" class="logo-top-left" />
+        <img src="img/logo-proyecto.png" alt="Logo Proyecto" class="logo-top-left" />
       </header>
 
       <!-- Zona de chat: avatar fijo (Rito) + pila de bocadillos -->
@@ -19,7 +20,7 @@
         <div class="avatar-wrap">
           <img src="img/rito.png" alt="Rito" class="avatar-fixed">
         </div>
-        
+
         <div class="bubble-column">
           <!-- aquí se apilan los bocadillos -->
           <div id="bubbleStack" class="bubble-stack"></div>
@@ -48,12 +49,12 @@
     </footer>
   </div>
 
+  <!-- Logo nuevo ABAJO DERECHA -->
+  <img src="img/logo-nuevo.png" alt="Logo Nuevo" class="logo-bottom-right" />
+
   <!-- Lógica de voz + chat -->
   <script>
-    // Avatar único (Rito). NO hay avatar de usuario.
     const AVATAR_BOT_SRC = "img/rito.png";
-
-    // ===== Web Speech API =====
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = SpeechRecognition ? new SpeechRecognition() : null;
 
@@ -77,14 +78,11 @@
       cargarVoces();
       window.speechSynthesis.onvoiceschanged = cargarVoces;
 
-      // Mensaje de bienvenida (sale desde Rito)
+      // Mensaje de bienvenida
       addMessage("¡Hola! Soy Rito. Hazme una pregunta y te respondo ;)", "bot");
     });
 
-    function toggleVoz() {
-      // si añades checkbox, conéctalo aquí
-      reproducirVoz = true;
-    }
+    function toggleVoz() { reproducirVoz = true; }
     function cargarVoces() {
       const voces = window.speechSynthesis.getVoices();
       const vocesES = voces.filter(v => v.lang.startsWith("es"));
@@ -109,10 +107,8 @@
         micActivo = false;
       }
 
-      // Tu PREGUNTA también sale en bocadillo desde Rito (mismo lado)
       addMessage(inputValue, "user");
       input.value = "";
-
       document.getElementById("loadingDots").style.display = "flex";
 
       try {
@@ -139,11 +135,10 @@
       }
     }
 
-    // Apila un bocadillo en la columna de la derecha; avatar fijo a la izquierda
     function addMessage(text, sender) {
       const stack = document.getElementById("bubbleStack");
       const bubble = document.createElement("div");
-      bubble.className = `bubble ${sender}`; // bubble user / bubble bot
+      bubble.className = `bubble ${sender}`;
       bubble.textContent = text;
       stack.appendChild(bubble);
       stack.scrollTop = stack.scrollHeight;
@@ -168,9 +163,8 @@
       }
     }
   </script>
-     <img src="img/logo nuevo.png" alt="Logo Nuevo" class="logo-bottom-right" />  
 </body>
 </html>
 
-
-
+      
+  
