@@ -1,88 +1,235 @@
 /* ===== Base ===== */
-html, body { height:100%; margin:0; padding:0; background:#f4f4f4; font-family:Arial, sans-serif; }
-.page-wrapper { display:flex; flex-direction:column; min-height:100vh; }
-.container { flex:1; background:#fff; padding:20px; border-radius:12px; max-width:900px;
-  margin:2em auto; box-shadow:0 8px 24px rgba(0,0,0,.12); }
+html, body { 
+  height: 100%; 
+  margin: 0; 
+  padding: 0; 
+  background: #f4f4f4; 
+  font-family: Arial, sans-serif; 
+}
+
+.page-wrapper { 
+  display: flex; 
+  flex-direction: column; 
+  min-height: 100vh; 
+}
+
+.container { 
+  flex: 1; 
+  background: #fff; 
+  padding: 20px; 
+  border-radius: 12px; 
+  max-width: 900px;
+  margin: 2em auto; 
+  box-shadow: 0 8px 24px rgba(0,0,0,.12); 
+}
 
 /* ===== Header ===== */
-.header { display:flex; justify-content:center; margin-bottom:18px; }
-.logo-top { max-height:60px; width:auto; }
+.header { 
+  display: flex; 
+  justify-content: flex-start; /* logo arriba izq */ 
+  margin-bottom: 18px; 
+}
 
 /* ===== Chat layout: avatar fijo + columna de bocadillos ===== */
 .chat-area {
-  display:grid; grid-template-columns: 120px 1fr; gap:18px; align-items:start;
-  padding:10px 10px 20px;
+  display: grid; 
+  grid-template-columns: 250px 1fr; /* más ancho para Rito */
+  gap: 18px; 
+  align-items: start;
+  padding: 10px 10px 20px;
 }
-.avatar-wrap { display:flex; justify-content:center; }
+
+.avatar-wrap { 
+  display: flex; 
+  justify-content: center; 
+  align-items: flex-start; 
+}
+
 .avatar-fixed {
-  max-width: 180%;
-  height: auto;
+  width: 100%; 
+  height: auto; 
+  max-width: 220px; /* controla tamaño máximo de Rito */
 }
 
 /* Columna de la derecha (bocadillos + input/botones) */
-.bubble-column { display:flex; flex-direction:column; gap:12px; }
-.bubble-stack { display:flex; flex-direction:column; gap:10px; max-height:45vh; overflow:auto; padding-right:6px; }
+.bubble-column { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 12px; 
+}
 
-/* ===== Bocadillos (siempre salen desde la izquierda hacia el avatar) ===== */
+.bubble-stack { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 10px; 
+  max-height: 45vh; 
+  overflow: auto; 
+  padding-right: 6px; 
+}
+
+/* ===== Bocadillos ===== */
 .bubble {
-  position:relative; padding:12px 16px; max-width:90%;
-  border-radius:14px; line-height:1.45; word-wrap:break-word;
-  border:2px solid #cfd8e3; background:#fff; color:#333;
-  /* separación respecto al avatar para que el piquito apunte a él */
-  margin-left:0;
+  position: relative; 
+  padding: 12px 16px; 
+  max-width: 90%;
+  border-radius: 14px; 
+  line-height: 1.45; 
+  word-wrap: break-word;
+  border: 2px solid #cfd8e3; 
+  background: #fff; 
+  color: #333;
+  margin-left: 0;
 }
 
 /* Piquito apuntando al avatar (izquierda) */
 .bubble::after {
-  content:""; position:absolute; left:-14px; top:18px; width:0; height:0;
-  border:10px solid transparent; border-right-color:#cfd8e3; /* borde */
+  content:""; 
+  position: absolute; 
+  left: -14px; 
+  top: 18px; 
+  width: 0; 
+  height: 0;
+  border: 10px solid transparent; 
+  border-right-color: #cfd8e3; 
 }
 .bubble::before {
-  content:""; position:absolute; left:-10px; top:20px; width:0; height:0;
-  border:8px solid transparent; border-right-color:#ffffff; /* relleno */
+  content:""; 
+  position: absolute; 
+  left: -10px; 
+  top: 20px; 
+  width: 0; 
+  height: 0;
+  border: 8px solid transparent; 
+  border-right-color: #ffffff; 
 }
 
-/* Colores distintos para diferenciar pregunta y respuesta, pero mismo lado */
-.bubble.user { background:#eef8ff; border-color:#a7d8ff; }
-.bubble.user::after { border-right-color:#a7d8ff; }
-.bubble.user::before { border-right-color:#eef8ff; }
+/* Colores de bocadillo */
+.bubble.user { 
+  background: #eef8ff; 
+  border-color: #a7d8ff; 
+}
+.bubble.user::after { border-right-color: #a7d8ff; }
+.bubble.user::before { border-right-color: #eef8ff; }
 
-.bubble.bot { background:#ffffff; border-color:#cfd8e3; }
+.bubble.bot { 
+  background: #ffffff; 
+  border-color: #cfd8e3; 
+}
 
-/* ===== Input y botones (columna derecha) ===== */
+/* ===== Input y botones ===== */
 input[type="text"] {
-  width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; font-size:16px; outline:none;
-  background:#eaf3ff;
+  width: 100%; 
+  padding: 12px; 
+  border: 1px solid #cbd5e1; 
+  border-radius: 8px; 
+  font-size: 16px; 
+  outline: none;
+  background: #eaf3ff;
 }
-.button-group-vertical { display:flex; flex-direction:column; gap:10px; width:200px; }
+
+.button-group-vertical { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 10px; 
+  width: 200px; 
+}
+
 button {
-  background:#8dd5ff; color:#000; border:none; padding:10px 14px; border-radius:8px; cursor:pointer;
-  font-size:16px; transition:background .2s, transform .05s;
+  background: #8dd5ff; 
+  color: #000; 
+  border: none; 
+  padding: 10px 14px; 
+  border-radius: 8px; 
+  cursor: pointer;
+  font-size: 16px; 
+  transition: background .2s, transform .05s;
 }
-button:hover { background:#0056b3; color:#fff; }
-button:active { transform: translateY(1px); }
+button:hover { 
+  background: #0056b3; 
+  color: #fff; 
+}
+button:active { 
+  transform: translateY(1px); 
+}
 
 /* Escribiendo… */
-.typing-dots { display:flex; gap:5px; height:18px; align-items:center; }
-.typing-dots span { width:10px; height:10px; background:#000; border-radius:50%; animation: blink 1.4s infinite both; }
+.typing-dots { 
+  display: flex; 
+  gap: 5px; 
+  height: 18px; 
+  align-items: center; 
+}
+.typing-dots span { 
+  width: 10px; 
+  height: 10px; 
+  background: #000; 
+  border-radius: 50%; 
+  animation: blink 1.4s infinite both; 
+}
 .typing-dots span:nth-child(2){ animation-delay:.2s; }
 .typing-dots span:nth-child(3){ animation-delay:.4s; }
-@keyframes blink { 0%,80%,100%{opacity:0; transform:scale(.9);} 40%{opacity:1; transform:scale(1.2);} }
+
+@keyframes blink { 
+  0%,80%,100%{opacity:0; transform:scale(.9);} 
+  40%{opacity:1; transform:scale(1.2);} 
+}
 
 /* Botón detener voz */
 .boton-detener {
-  background:#ffcccc; color:#b30000; font-weight:bold;
-  transition:opacity .3s ease, transform .3s ease;
-  opacity:1; transform:scale(1);
-  font-size:12px; padding:6px 10px; border-radius:6px; width:200px;
+  background: #ffcccc; 
+  color: #b30000; 
+  font-weight: bold;
+  transition: opacity .3s ease, transform .3s ease;
+  opacity: 1; 
+  transform: scale(1);
+  font-size: 12px; 
+  padding: 6px 10px; 
+  border-radius: 6px; 
+  width: 200px;
 }
-.boton-detener.oculto { opacity:0; transform:scale(.9); pointer-events:none; }
+.boton-detener.oculto { 
+  opacity: 0; 
+  transform: scale(.9); 
+  pointer-events: none; 
+}
 
 /* Footer */
-footer { text-align:center; padding:16px; color:#374151; }
-footer a { color:#0066cc; text-decoration:none; }
-footer a:hover { text-decoration:underline; }
+footer { 
+  text-align: center; 
+  padding: 16px; 
+  color: #374151; 
+}
+footer a { 
+  color: #0066cc; 
+  text-decoration: none; 
+}
+footer a:hover { 
+  text-decoration: underline; 
+}
 
+/* ===== Logos fijos ===== */
+.logo-top-left {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  width: 120px;
+  height: auto;
+  z-index: 1000;
+}
 
+.logo-bottom-right {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  width: 120px;
+  height: auto;
+  z-index: 1000;
+}
 
-
+/* ===== Responsive ===== */
+@media (max-width: 600px) {
+  .logo-top-left,
+  .logo-bottom-right { width: 90px; }
+  .chat-area { grid-template-columns: 150px 1fr; }
+  .avatar-fixed { max-width: 150px; }
+}
