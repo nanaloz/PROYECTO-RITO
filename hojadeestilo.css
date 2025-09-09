@@ -212,7 +212,7 @@ footer a:hover {
   position: fixed;
   top: 10px;
   left: 10px;
-  width: 120px;
+  width: 200px;
   height: auto;
   z-index: 1000;
 }
@@ -233,3 +233,4 @@ footer a:hover {
   .chat-area { grid-template-columns: 150px 1fr; }
   .avatar-fixed { max-width: 150px; }
 }
+
