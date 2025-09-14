@@ -62,12 +62,12 @@ html, body {
   display: flex; 
   flex-direction: column; 
   gap: 16px;                 /* más espacio entre burbujas */
-  max-height: 65vh;          /* más alto que antes (45vh) */
+  max-height: 65vh;          /* más alto que antes */
   overflow: auto; 
   padding-right: 8px; 
 }
 
-/* ===== Burbujas ===== */
+/* ===== Burbujas (estilo unificado y más grande) ===== */
 .bubble {
   position: relative; 
   padding: 24px 32px;        /* más espacio interno */
@@ -76,12 +76,12 @@ html, body {
   line-height: 1.6;          /* más aire entre líneas */
   word-wrap: break-word;
   border: 2px solid #cfd8e3; 
-  background: #fff; 
+  background: #ffffff; 
   color: #333;
   font-size: 20px;           /* texto más grande */
 }
 
-/* Piquito por defecto a la izquierda (para bot/compose) */
+/* Piquito a la izquierda (estándar para todos) */
 .bubble::after {
   content:""; 
   position: absolute; 
@@ -103,77 +103,12 @@ html, body {
   border-right-color: #ffffff; 
 }
 
-/* Primer bocadillo especial (compose) */
+/* Primer bocadillo (compose) con acciones a la derecha */
 .bubble.compose{
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
   gap: 20px;
-  border-color: #cfd8e3;
-  background: #ffffff;
 }
 .bubble.compose .text{
   font-weight: 600;
-  color: #111;
-}
-.bubble.compose .meta-right{
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-.mic-img{
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-  cursor: pointer;
-}
-.send-img{
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-  cursor: pointer;
-  transition: transform .08s ease, opacity .2s ease;
-}
-.send-img:hover{ transform: translateY(-2px) }
-.send-img:active{ transform: translateY(0); opacity: .8 }
-
-.bubble.compose .meta-right time{
-  font-size: .9rem;
-  color: #555;
-  white-space: nowrap;
-}
-
-/* Burbujas por rol */
-.bubble.bot { 
-  background: #ffffff; 
-  border-color: #cfd8e3; 
-}
-
-.bubble.user { 
-  align-self: flex-end;              
-  background: #eef8ff; 
-  border-color: #a7d8ff; 
-}
-
-/* Piquito a la derecha para el usuario */
-.bubble.user::after, 
-.bubble.user::before {
-  left: auto;
-}
-.bubble.user::after {
-  right: -18px; 
-  border-right-color: transparent;
-  border-left-color: #a7d8ff;
-}
-.bubble.user::before {
-  right: -14px; 
-  border-right-color: transparent;
-  border-left-color: #eef8ff;
-}
-
-/* Timestamps dentro de burbuja normal */
-.bubble time{
-  display: block;
-  margin-top: 8px;
-  font-size: .9
-
