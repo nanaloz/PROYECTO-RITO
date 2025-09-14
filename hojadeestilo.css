@@ -61,44 +61,45 @@ html, body {
 .bubble-stack { 
   display: flex; 
   flex-direction: column; 
-  gap: 10px; 
-  max-height: 45vh; 
+  gap: 16px;                 /* más espacio entre burbujas */
+  max-height: 65vh;          /* más alto que antes (45vh) */
   overflow: auto; 
-  padding-right: 6px; 
+  padding-right: 8px; 
 }
 
 /* ===== Burbujas ===== */
 .bubble {
   position: relative; 
-  padding: 12px 16px; 
-  max-width: 90%;
-  border-radius: 14px; 
-  line-height: 1.45; 
+  padding: 24px 32px;        /* más espacio interno */
+  max-width: 95%;            /* más ancho */
+  border-radius: 20px;       /* bordes más redondeados */
+  line-height: 1.6;          /* más aire entre líneas */
   word-wrap: break-word;
   border: 2px solid #cfd8e3; 
   background: #fff; 
   color: #333;
+  font-size: 20px;           /* texto más grande */
 }
 
 /* Piquito por defecto a la izquierda (para bot/compose) */
 .bubble::after {
   content:""; 
   position: absolute; 
-  left: -14px; 
-  top: 18px; 
+  left: -18px; 
+  top: 22px; 
   width: 0; 
   height: 0;
-  border: 10px solid transparent; 
+  border: 12px solid transparent; 
   border-right-color: #cfd8e3; 
 }
 .bubble::before {
   content:""; 
   position: absolute; 
-  left: -10px; 
-  top: 20px; 
+  left: -14px; 
+  top: 24px; 
   width: 0; 
   height: 0;
-  border: 8px solid transparent; 
+  border: 10px solid transparent; 
   border-right-color: #ffffff; 
 }
 
@@ -107,7 +108,7 @@ html, body {
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
   border-color: #cfd8e3;
   background: #ffffff;
 }
@@ -118,25 +119,26 @@ html, body {
 .bubble.compose .meta-right{
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 .mic-img{
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
+  cursor: pointer;
 }
 .send-img{
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
   cursor: pointer;
   transition: transform .08s ease, opacity .2s ease;
 }
-.send-img:hover{ transform: translateY(-1px) }
+.send-img:hover{ transform: translateY(-2px) }
 .send-img:active{ transform: translateY(0); opacity: .8 }
 
 .bubble.compose .meta-right time{
-  font-size: .86rem;
+  font-size: .9rem;
   color: #555;
   white-space: nowrap;
 }
@@ -148,7 +150,7 @@ html, body {
 }
 
 .bubble.user { 
-  align-self: flex-end;               /* a la derecha */
+  align-self: flex-end;              
   background: #eef8ff; 
   border-color: #a7d8ff; 
 }
@@ -159,12 +161,12 @@ html, body {
   left: auto;
 }
 .bubble.user::after {
-  right: -14px; 
+  right: -18px; 
   border-right-color: transparent;
   border-left-color: #a7d8ff;
 }
 .bubble.user::before {
-  right: -10px; 
+  right: -14px; 
   border-right-color: transparent;
   border-left-color: #eef8ff;
 }
@@ -172,125 +174,6 @@ html, body {
 /* Timestamps dentro de burbuja normal */
 .bubble time{
   display: block;
-  margin-top: 6px;
-  font-size: .8rem;
-  color: #6b7280;
-}
+  margin-top: 8px;
+  font-size: .9
 
-/* ===== Input y botones ===== */
-input[type="text"] {
-  width: 100%; 
-  padding: 12px; 
-  border: 1px solid #cbd5e1; 
-  border-radius: 8px; 
-  font-size: 16px; 
-  outline: none;
-  background: #eaf3ff;
-}
-
-.button-group-vertical { 
-  display: flex; 
-  flex-direction: column; 
-  gap: 10px; 
-  width: 200px; 
-}
-
-button {
-  background: #8dd5ff; 
-  color: #000; 
-  border: none; 
-  padding: 10px 14px; 
-  border-radius: 8px; 
-  cursor: pointer;
-  font-size: 16px; 
-  transition: background .2s, transform .05s;
-}
-button:hover { 
-  background: #0056b3; 
-  color: #fff; 
-}
-button:active { 
-  transform: translateY(1px); 
-}
-
-/* Escribiendo… */
-.typing-dots { 
-  display: flex; 
-  gap: 5px; 
-  height: 18px; 
-  align-items: center; 
-}
-.typing-dots span { 
-  width: 10px; 
-  height: 10px; 
-  background: #000; 
-  border-radius: 50%; 
-  animation: blink 1.4s infinite both; 
-}
-.typing-dots span:nth-child(2){ animation-delay:.2s; }
-.typing-dots span:nth-child(3){ animation-delay:.4s; }
-
-@keyframes blink { 
-  0%,80%,100%{opacity:0; transform:scale(.9);} 
-  40%{opacity:1; transform:scale(1.2);} 
-}
-
-/* Botón detener voz */
-.boton-detener {
-  background: #ffcccc; 
-  color: #b30000; 
-  font-weight: bold;
-  transition: opacity .3s ease, transform .3s ease;
-  opacity: 1; 
-  transform: scale(1);
-  font-size: 12px; 
-  padding: 6px 10px; 
-  border-radius: 6px; 
-  width: 200px;
-}
-.boton-detener.oculto { 
-  opacity: 0; 
-  transform: scale(.9); 
-  pointer-events: none; 
-}
-
-/* Footer */
-footer { 
-  text-align: center; 
-  padding: 16px; 
-  color: #374151; 
-}
-footer a { 
-  color: #0066cc; 
-  text-decoration: none; 
-}
-footer a:hover { 
-  text-decoration: underline; 
-}
-
-/* ===== Logos fijos ===== */
-.logo-top-left {
-  position: fixed;
-  top: 10px;
-  left: 10px;
-  width: 200px;
-  height: auto;
-  z-index: 1000;
-}
-
-.logo-bottom-right {
-  position: fixed;
-  bottom: 10px;
-  right: 10px;
-  width: 120px;
-  height: auto;
-  z-index: 1000;
-}
-
-/* ===== Responsive ===== */
-@media (max-width: 600px) {
-  .logo-top-left,
-  .logo-bottom-right { width: 90px; }
-  .chat-area { grid-template-columns: 150px 1fr; }
-  .avatar-fixed { max-width: 150px; }
-}
