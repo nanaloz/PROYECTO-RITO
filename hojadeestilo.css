@@ -61,16 +61,16 @@ html, body {
 .bubble-stack { 
   display: flex; 
   flex-direction: column; 
-  gap: 16px;                 /* espacio entre burbujas */
-  max-height: 65vh;          /* altura útil del chat */
+  gap: 16px;
+  max-height: 65vh;
   overflow: auto; 
-  padding-right: 8px; 
+  padding: 0 12px;          /* evita que el piquito se corte en bordes */
 }
 
-/* ===== Burbujas (unificadas e iguales) ===== */
+/* ===== Burbujas (idénticas en estilo) ===== */
 .bubble {
   position: relative; 
-  padding: 24px 32px;
+  padding: 22px 28px;
   max-width: 95%;
   border-radius: 20px;
   line-height: 1.6;
@@ -78,82 +78,102 @@ html, body {
   border: 2px solid #cfd8e3;
   background: #ffffff;
   color: #333;
-  font-size: 20px;
-  align-self: flex-start;       /* TODAS a la izquierda para que se vean idénticas */
+  font-size: 18px;
 }
 
-/* Piquito a la izquierda (para TODAS) */
-.bubble::after {
+/* Bot: a la izquierda */
+.bubble.bot {
+  align-self: flex-start;
+  margin-left: 0;
+  margin-right: auto;
+}
+
+/* User: a la derecha */
+.bubble.user {
+  align-self: flex-end;
+  margin-right: 0;
+  margin-left: auto;
+}
+
+/* ===== Piquitos ===== */
+/* Bot (izquierda) */
+.bubble.bot::after,
+.bubble.bot::before {
   content: "";
   position: absolute;
-  left: -18px;
+  top: 22px;                /* alinea verticalmente el piquito */
+  width: 0; 
+  height: 0;
+}
+.bubble.bot::after {
+  left: -16px;
+  border: 10px solid transparent;
+  border-right-color: #cfd8e3;     /* borde del bocadillo */
+}
+.bubble.bot::before {
+  left: -12px;
+  border: 8px solid transparent;
+  border-right-color: #ffffff;     /* relleno del bocadillo */
+}
+
+/* User (derecha) */
+.bubble.user::after,
+.bubble.user::before {
+  content: "";
+  position: absolute;
   top: 22px;
   width: 0; 
   height: 0;
-  border: 12px solid transparent;
-  border-right-color: #cfd8e3;
 }
-.bubble::before {
-  content: "";
-  position: absolute;
-  left: -14px;
-  top: 24px;
-  width: 0; 
-  height: 0;
+.bubble.user::after {
+  right: -16px;
   border: 10px solid transparent;
-  border-right-color: #ffffff;
+  border-left-color: #cfd8e3;
 }
-
-/* Elimina cualquier estilo antiguo de usuario a la derecha */
-.bubble.user::after,
 .bubble.user::before {
-  right: auto;
-  left: inherit;
-}
-.bubble.user {
-  background: #ffffff;
-  border-color: #cfd8e3;
-  align-self: flex-start;
+  right: -12px;
+  border: 8px solid transparent;
+  border-left-color: #ffffff;
 }
 
 /* ===== Bocadillo compose (con micro + flecha a la derecha) ===== */
-.bubble.compose {
+.bubble.compose{
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
-  gap: 20px;
+  gap: 18px;
 }
-.bubble.compose .text {
+.bubble.compose .text{
   font-weight: 600;
   color: #111;
 }
-.bubble.compose .meta-right {
+.bubble.compose .meta-right{
   display: inline-flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
 }
 
-/* Iconos sin deformación (cuadrados) */
+/* Iconos sin deformación */
 .mic-img,
-.send-img {
-  width: 34px;
-  height: 34px;
-  aspect-ratio: 1 / 1;    /* asegura cuadrado */
-  object-fit: contain;    /* sin distorsión */
+.send-img{
+  width: 32px;
+  height: 32px;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
   display: inline-block;
   vertical-align: middle;
   cursor: pointer;
   user-select: none;
   -webkit-user-drag: none;
 }
-.send-img {
+.send-img{
   transition: transform .08s ease, opacity .2s ease;
 }
-.send-img:hover { transform: translateY(-2px); }
-.send-img:active { transform: translateY(0); opacity: .85; }
+.send-img:hover{ transform: translateY(-2px) }
+.send-img:active{ transform: translateY(0); opacity: .85 }
 
-/* ===== Timestamps (por si los usas) ===== */
-.bubble time {
+/* ===== (Opcional) Timestamps si los usas en algún momento ===== */
+.bubble time{
   display: block;
   margin-top: 8px;
   font-size: .9rem;
@@ -162,32 +182,24 @@ html, body {
 
 /* ===== Input y botones ===== */
 input[type="text"] {
-  width: 100%;
+  width: 100%; 
   padding: 16px;
-  border: 1px solid #cbd5e1;
-  border-radius: 10px;
-  font-size: 18px;
+  border: 1px solid #cbd5e1; 
+  border-radius: 10px; 
+  font-size: 18px; 
   outline: none;
   background: #eaf3ff;
 }
 
-/* Contenedor botones verticales (si añades más en el futuro) */
-.button-group-vertical { 
-  display: flex; 
-  flex-direction: column; 
-  gap: 12px; 
-  width: 220px; 
-}
-
 /* Botón detener voz redondo (pill) */
 .boton-detener {
-  background: #ffcccc;
-  color: #b30000;
+  background: #ffcccc; 
+  color: #b30000; 
   font-weight: 700;
-  font-size: 16px;
-  padding: 12px 18px;
-  border-radius: 9999px;   /* pill */
-  width: auto;
+  font-size: 16px; 
+  padding: 12px 18px; 
+  border-radius: 9999px;      /* pill */
+  width: auto; 
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -198,10 +210,10 @@ input[type="text"] {
 }
 .boton-detener:hover { transform: translateY(-1px); }
 .boton-detener:active { transform: translateY(0) scale(.98); }
-.boton-detener.oculto {
-  opacity: 0;
-  transform: scale(.95);
-  pointer-events: none;
+.boton-detener.oculto { 
+  opacity: 0; 
+  transform: scale(.95); 
+  pointer-events: none; 
 }
 
 /* Escribiendo… */
@@ -263,8 +275,8 @@ footer a:hover {
 @media (max-width: 600px) {
   .logo-top-left,
   .logo-bottom-right { width: 90px; }
-  .chat-area { grid-template-columns: 150px 1fr; }
-  .avatar-fixed { max-width: 150px; }
-  .bubble { font-size: 18px; padding: 18px 22px; }
-  .mic-img, .send-img { width: 30px; height: 30px; }
+  .chat-area { grid-template-columns: 120px 1fr; }
+  .avatar-fixed { max-width: 120px; }
+  .bubble { font-size: 17px; padding: 18px 22px; }
+  .mic-img, .send-img { width: 28px; height: 28px; }
 }
