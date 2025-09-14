@@ -9,31 +9,25 @@
 <body>
   <div class="page-wrapper">
     <div class="container">
-      
-      <!-- Logo proyecto ARRIBA IZQUIERDA -->
       <header class="header">
         <img src="img/logoproyecto.png" alt="Logo Proyecto" class="logo-top-left" />
       </header>
 
-      <!-- Zona de chat: avatar fijo (Rito) + pila de bocadillos -->
       <section class="chat-area">
         <div class="avatar-wrap">
           <img src="img/rito.png" alt="Rito" class="avatar-fixed">
         </div>
 
         <div class="bubble-column">
-          <!-- pila de bocadillos -->
           <div id="bubbleStack" class="bubble-stack"></div>
 
-          <!-- escribiendo… -->
           <div id="loadingDots" class="typing-dots" style="display:none;">
             <span></span><span></span><span></span>
           </div>
 
-          <!-- input -->
-          <input type="text" id="textInput" placeholder="Escribe aquí tu pregunta..." />
+          <!-- input de texto sin placeholder -->
+          <input type="text" id="textInput" aria-label="Pregunta" />
 
-          <!-- solo botón detener voz (los de hablar/enviar se han quitado) -->
           <div class="button-group-vertical">
             <button id="btnDetenerVoz" class="boton-detener oculto" onclick="detenerVoz()">⏹ Detener voz</button>
           </div>
@@ -42,17 +36,14 @@
     </div>
 
     <footer>
-      <p>
-        &copy; 2025 Aranzadi La Ley. Todos los derechos reservados. |
+      <p>&copy; 2025 Aranzadi La Ley. Todos los derechos reservados. |
         <a href="https://www.aranzadilaley.es/aviso-legal-ia.html" target="_blank" rel="noopener noreferrer">Aviso Legal</a>
       </p>
     </footer>
   </div>
 
-  <!-- Logo nuevo ABAJO DERECHA -->
   <img src="img/logo nuevo.png" alt="Logo Nuevo" class="logo-bottom-right" />
 
-  <!-- Lógica de voz + chat -->
   <script>
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = SpeechRecognition ? new SpeechRecognition() : null;
@@ -64,33 +55,38 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       if (recognition) {
-        recognition.continuous = true;
+        recognition.continuous = false;
         recognition.interimResults = false;
         recognition.lang = "es-ES";
         recognition.onresult = (event) => {
-          const transcript = event.results[event.results.length - 1][0].transcript;
-          const input = document.getElementById("textInput");
-          input.value = input.value.trim() !== "" ? input.value + " " + transcript : transcript;
+          const transcript = event.results[0][0].transcript;
+          document.getElementById("textInput").value = transcript;
         };
-        recognition.onerror = () => { micActivo = false; };
+        recognition.onend = () => { micActivo = false; };
+        recognition.onerror = (err) => { console.error('Error micrófono:', err); micActivo = false; };
+      } else {
+        console.warn("El navegador no soporta SpeechRecognition.");
       }
+
       cargarVoces();
       window.speechSynthesis.onvoiceschanged = cargarVoces;
 
-      // Bocadillo superior fijo "Hazme una pregunta" + micro + flecha (sin fecha/hora)
       addComposeBubble();
     });
 
     function cargarVoces() {
       const voces = window.speechSynthesis.getVoices();
-      const vocesES = voces.filter(v => v.lang.startsWith("es"));
-      vozSeleccionada = vocesES[0] || null;
+      vozSeleccionada = voces.find(v => v.lang.startsWith("es")) || null;
     }
 
     function startRecognition() {
-      if (recognition && !micActivo) {
-        recognition.start();
+      if (!recognition) {
+        alert("Tu navegador no soporta reconocimiento de voz");
+        return;
+      }
+      if (!micActivo) {
         micActivo = true;
+        recognition.start();
       }
     }
 
@@ -103,17 +99,15 @@
 
     function speak(text) {
       if (!reproducirVoz || !('speechSynthesis' in window)) return;
-      const synth = window.speechSynthesis;
       const utt = new SpeechSynthesisUtterance(text);
-      utt.lang = recognition ? recognition.lang : "es-ES";
+      utt.lang = "es-ES";
       utt.rate = velocidad;
       if (vozSeleccionada) utt.voice = vozSeleccionada;
       utt.onstart = () => document.getElementById("btnDetenerVoz").classList.remove("oculto");
       utt.onend   = () => document.getElementById("btnDetenerVoz").classList.add("oculto");
-      synth.speak(utt);
+      window.speechSynthesis.speak(utt);
     }
 
-    // Primer bocadillo fijo (sin <time>)
     function addComposeBubble(){
       const stack = document.getElementById("bubbleStack");
       const bubble = document.createElement("div");
@@ -126,25 +120,19 @@
       const right = document.createElement("div");
       right.className = "meta-right";
 
-      // Imagen micro -> inicia reconocimiento
       const micImg = document.createElement("img");
       micImg.src = "img/micro.png";
       micImg.alt = "Micrófono";
       micImg.className = "mic-img";
       micImg.title = "Hablar";
-      micImg.addEventListener("click", () => {
-        const input = document.getElementById("textInput");
-        input.value = ""; // limpia campo antes de dictar
-        startRecognition();
-      });
+      micImg.addEventListener("click", startRecognition);
 
-      // Imagen flecha -> envía
       const sendImg = document.createElement("img");
       sendImg.src = "img/enviar.png";
       sendImg.alt = "Enviar";
       sendImg.className = "send-img";
       sendImg.title = "Enviar";
-      sendImg.addEventListener("click", () => sendMessage());
+      sendImg.addEventListener("click", sendMessage);
 
       right.appendChild(micImg);
       right.appendChild(sendImg);
@@ -154,88 +142,8 @@
       stack.appendChild(bubble);
     }
 
-    // Bocadillo de pregunta del usuario (sin hora)
     function addUserQuestion(text){
-      const stack = document.getElementById("bubbleStack");
-      const bubble = document.createElement("div");
-      bubble.className = "bubble user";
-      const msg = document.createElement("div");
-      msg.textContent = text;
-      bubble.appendChild(msg);
-      stack.appendChild(bubble);
-    }
+      if (!text || !text.trim()) re
 
-    // Bocadillo de respuesta de Rito (sin hora)
-    function addBotAnswer(text){
-      const stack = document.getElementById("bubbleStack");
-      const bubble = document.createElement("div");
-      bubble.className = "bubble bot";
-      const msg = document.createElement("div");
-      msg.textContent = text;
-      bubble.appendChild(msg);
-      stack.appendChild(bubble);
-      stack.parentElement.scrollTo({ top: stack.parentElement.scrollHeight, behavior: "smooth" });
-    }
-
-    function setUIBusy(busy){
-      document.querySelectorAll(".button-group-vertical button").forEach(b=>b.disabled = busy);
-      document.getElementById("textInput").disabled = busy;
-    }
-
-    // Enviar con Enter (Shift+Enter hace salto de línea)
-    document.addEventListener("keydown", (e)=>{
-      const input = document.getElementById("textInput");
-      if (document.activeElement === input && e.key === "Enter" && !e.shiftKey){
-        e.preventDefault();
-        sendMessage();
-      }
-    });
-
-    async function sendMessage() {
-      const input = document.getElementById("textInput");
-      const inputValue = input.value.trim();
-      if (!inputValue) return;
-
-      // Si estaba dictando, paramos
-      if (recognition && micActivo) {
-        recognition.stop();
-        micActivo = false;
-      }
-
-      // 1) Añade la PREGUNTA del usuario
-      addUserQuestion(inputValue);
-
-      // Limpia input y marca UI ocupada
-      input.value = "";
-      document.getElementById("loadingDots").style.display = "flex";
-      setUIBusy(true);
-
-      try {
-        // 2) Llama a tu backend
-        const response = await fetch("/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: inputValue })
-        });
-        const data = await response.json();
-        const respuestaTexto = data?.response
-          ? (typeof data.response === "object"
-              ? (data.response.message || data.response.content || JSON.stringify(data.response))
-              : String(data.response))
-          : "No se recibió una respuesta válida.";
-
-        // 3) Añade la RESPUESTA de Rito
-        addBotAnswer(respuestaTexto);
-        speak(respuestaTexto);
-
-      } catch (e) {
-        console.error(e);
-        addBotAnswer("No se pudo conectar con la IA.");
-      } finally {
-        document.getElementById("loadingDots").style.display = "none";
-        setUIBusy(false);
-      }
-    }
-  </script>
-</body>
-</html>
+ 
+   
