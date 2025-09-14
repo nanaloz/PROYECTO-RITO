@@ -30,11 +30,11 @@
             <span></span><span></span><span></span>
           </div>
 
-          <!-- input + botones -->
+          <!-- input -->
           <input type="text" id="textInput" placeholder="Escribe aquí tu pregunta..." />
+
+          <!-- solo botón detener voz (los de hablar/enviar se han quitado) -->
           <div class="button-group-vertical">
-            <button onclick="startRecognition()">🎙 Hablar</button>
-            <button onclick="sendMessage()">📩 Enviar</button>
             <button id="btnDetenerVoz" class="boton-detener oculto" onclick="detenerVoz()">⏹ Detener voz</button>
           </div>
         </div>
@@ -77,7 +77,7 @@
       cargarVoces();
       window.speechSynthesis.onvoiceschanged = cargarVoces;
 
-      // Bocadillo superior fijo "Hazme una pregunta" + micro + flecha + fecha (inicial)
+      // Bocadillo superior fijo "Hazme una pregunta" + micro + flecha (sin fecha/hora)
       addComposeBubble();
     });
 
@@ -89,7 +89,6 @@
 
     function startRecognition() {
       if (recognition && !micActivo) {
-        document.getElementById("textInput").value = "";
         recognition.start();
         micActivo = true;
       }
@@ -114,16 +113,7 @@
       synth.speak(utt);
     }
 
-    function formatTimeHM(date=new Date()){
-      return date.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
-    }
-    function formatDateTime(date=new Date()){
-      return date.toLocaleString('es-ES',{
-        day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'
-      });
-    }
-
-    // Primer bocadillo fijo
+    // Primer bocadillo fijo (sin <time>)
     function addComposeBubble(){
       const stack = document.getElementById("bubbleStack");
       const bubble = document.createElement("div");
@@ -136,67 +126,54 @@
       const right = document.createElement("div");
       right.className = "meta-right";
 
+      // Imagen micro -> inicia reconocimiento
       const micImg = document.createElement("img");
-      micImg.src = "img/micro.png";      // <- icono micro
+      micImg.src = "img/micro.png";
       micImg.alt = "Micrófono";
       micImg.className = "mic-img";
       micImg.title = "Hablar";
+      micImg.addEventListener("click", () => {
+        const input = document.getElementById("textInput");
+        input.value = ""; // limpia campo antes de dictar
+        startRecognition();
+      });
 
+      // Imagen flecha -> envía
       const sendImg = document.createElement("img");
-      sendImg.src = "img/enviar.png";    // <- icono flecha enviar
+      sendImg.src = "img/enviar.png";
       sendImg.alt = "Enviar";
       sendImg.className = "send-img";
       sendImg.title = "Enviar";
       sendImg.addEventListener("click", () => sendMessage());
 
-      const time = document.createElement("time");
-      time.textContent = formatDateTime();   // inicial
-      time.dateTime = new Date().toISOString();
-
       right.appendChild(micImg);
       right.appendChild(sendImg);
-      right.appendChild(time);
 
       bubble.appendChild(left);
       bubble.appendChild(right);
       stack.appendChild(bubble);
     }
 
-    // Bocadillo de pregunta del usuario (debajo del fijo)
+    // Bocadillo de pregunta del usuario (sin hora)
     function addUserQuestion(text){
       const stack = document.getElementById("bubbleStack");
       const bubble = document.createElement("div");
       bubble.className = "bubble user";
-
       const msg = document.createElement("div");
       msg.textContent = text;
-
-      const t = document.createElement("time");
-      t.textContent = formatTimeHM();
-      t.dateTime = new Date().toISOString();
-
       bubble.appendChild(msg);
-      bubble.appendChild(t);
       stack.appendChild(bubble);
     }
 
-    // Bocadillo de respuesta de Rito (debajo de la pregunta)
+    // Bocadillo de respuesta de Rito (sin hora)
     function addBotAnswer(text){
       const stack = document.getElementById("bubbleStack");
       const bubble = document.createElement("div");
       bubble.className = "bubble bot";
-
       const msg = document.createElement("div");
       msg.textContent = text;
-
-      const t = document.createElement("time");
-      t.textContent = formatTimeHM();
-      t.dateTime = new Date().toISOString();
-
       bubble.appendChild(msg);
-      bubble.appendChild(t);
       stack.appendChild(bubble);
-
       stack.parentElement.scrollTo({ top: stack.parentElement.scrollHeight, behavior: "smooth" });
     }
 
@@ -219,29 +196,22 @@
       const inputValue = input.value.trim();
       if (!inputValue) return;
 
-      // Detén micro si estaba escuchando
+      // Si estaba dictando, paramos
       if (recognition && micActivo) {
         recognition.stop();
         micActivo = false;
       }
 
-      // 1) Actualiza la fecha del primer bocadillo (fecha de envío)
-      const composeTime = document.querySelector(".bubble.compose time");
-      if (composeTime) {
-        composeTime.textContent = formatDateTime();
-        composeTime.dateTime = new Date().toISOString();
-      }
-
-      // 2) Añade la pregunta del usuario
+      // 1) Añade la PREGUNTA del usuario
       addUserQuestion(inputValue);
 
-      // Limpia y marca UI ocupada
+      // Limpia input y marca UI ocupada
       input.value = "";
       document.getElementById("loadingDots").style.display = "flex";
       setUIBusy(true);
 
       try {
-        // 3) Llama a tu backend
+        // 2) Llama a tu backend
         const response = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -254,7 +224,7 @@
               : String(data.response))
           : "No se recibió una respuesta válida.";
 
-        // 4) Añade la respuesta de Rito (debajo)
+        // 3) Añade la RESPUESTA de Rito
         addBotAnswer(respuestaTexto);
         speak(respuestaTexto);
 
