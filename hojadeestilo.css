@@ -61,54 +61,9 @@ html, body {
 .bubble-stack { 
   display: flex; 
   flex-direction: column; 
-  gap: 16px;                 /* más espacio entre burbujas */
-  max-height: 65vh;          /* más alto que antes */
+  gap: 16px;                 /* espacio entre burbujas */
+  max-height: 65vh;          /* altura útil del chat */
   overflow: auto; 
-  padding-right: 8px; 
-}
+  padding-right: 8px;
 
-/* ===== Burbujas (estilo unificado y más grande) ===== */
-.bubble {
-  position: relative; 
-  padding: 24px 32px;        /* más espacio interno */
-  max-width: 95%;            /* más ancho */
-  border-radius: 20px;       /* bordes más redondeados */
-  line-height: 1.6;          /* más aire entre líneas */
-  word-wrap: break-word;
-  border: 2px solid #cfd8e3; 
-  background: #ffffff; 
-  color: #333;
-  font-size: 20px;           /* texto más grande */
-}
 
-/* Piquito a la izquierda (estándar para todos) */
-.bubble::after {
-  content:""; 
-  position: absolute; 
-  left: -18px; 
-  top: 22px; 
-  width: 0; 
-  height: 0;
-  border: 12px solid transparent; 
-  border-right-color: #cfd8e3; 
-}
-.bubble::before {
-  content:""; 
-  position: absolute; 
-  left: -14px; 
-  top: 24px; 
-  width: 0; 
-  height: 0;
-  border: 10px solid transparent; 
-  border-right-color: #ffffff; 
-}
-
-/* Primer bocadillo (compose) con acciones a la derecha */
-.bubble.compose{
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 20px;
-}
-.bubble.compose .text{
-  font-weight: 600;
