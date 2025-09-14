@@ -64,6 +64,207 @@ html, body {
   gap: 16px;                 /* espacio entre burbujas */
   max-height: 65vh;          /* altura útil del chat */
   overflow: auto; 
-  padding-right: 8px;
+  padding-right: 8px; 
+}
 
+/* ===== Burbujas (unificadas e iguales) ===== */
+.bubble {
+  position: relative; 
+  padding: 24px 32px;
+  max-width: 95%;
+  border-radius: 20px;
+  line-height: 1.6;
+  word-wrap: break-word;
+  border: 2px solid #cfd8e3;
+  background: #ffffff;
+  color: #333;
+  font-size: 20px;
+  align-self: flex-start;       /* TODAS a la izquierda para que se vean idénticas */
+}
 
+/* Piquito a la izquierda (para TODAS) */
+.bubble::after {
+  content: "";
+  position: absolute;
+  left: -18px;
+  top: 22px;
+  width: 0; 
+  height: 0;
+  border: 12px solid transparent;
+  border-right-color: #cfd8e3;
+}
+.bubble::before {
+  content: "";
+  position: absolute;
+  left: -14px;
+  top: 24px;
+  width: 0; 
+  height: 0;
+  border: 10px solid transparent;
+  border-right-color: #ffffff;
+}
+
+/* Elimina cualquier estilo antiguo de usuario a la derecha */
+.bubble.user::after,
+.bubble.user::before {
+  right: auto;
+  left: inherit;
+}
+.bubble.user {
+  background: #ffffff;
+  border-color: #cfd8e3;
+  align-self: flex-start;
+}
+
+/* ===== Bocadillo compose (con micro + flecha a la derecha) ===== */
+.bubble.compose {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 20px;
+}
+.bubble.compose .text {
+  font-weight: 600;
+  color: #111;
+}
+.bubble.compose .meta-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Iconos sin deformación (cuadrados) */
+.mic-img,
+.send-img {
+  width: 34px;
+  height: 34px;
+  aspect-ratio: 1 / 1;    /* asegura cuadrado */
+  object-fit: contain;    /* sin distorsión */
+  display: inline-block;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.send-img {
+  transition: transform .08s ease, opacity .2s ease;
+}
+.send-img:hover { transform: translateY(-2px); }
+.send-img:active { transform: translateY(0); opacity: .85; }
+
+/* ===== Timestamps (por si los usas) ===== */
+.bubble time {
+  display: block;
+  margin-top: 8px;
+  font-size: .9rem;
+  color: #6b7280;
+}
+
+/* ===== Input y botones ===== */
+input[type="text"] {
+  width: 100%;
+  padding: 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 18px;
+  outline: none;
+  background: #eaf3ff;
+}
+
+/* Contenedor botones verticales (si añades más en el futuro) */
+.button-group-vertical { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 12px; 
+  width: 220px; 
+}
+
+/* Botón detener voz redondo (pill) */
+.boton-detener {
+  background: #ffcccc;
+  color: #b30000;
+  font-weight: 700;
+  font-size: 16px;
+  padding: 12px 18px;
+  border-radius: 9999px;   /* pill */
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(179,0,0,.2);
+  box-shadow: 0 2px 6px rgba(179,0,0,.15);
+  transition: transform .12s ease, opacity .2s ease;
+}
+.boton-detener:hover { transform: translateY(-1px); }
+.boton-detener:active { transform: translateY(0) scale(.98); }
+.boton-detener.oculto {
+  opacity: 0;
+  transform: scale(.95);
+  pointer-events: none;
+}
+
+/* Escribiendo… */
+.typing-dots { 
+  display: flex; 
+  gap: 6px; 
+  height: 22px; 
+  align-items: center; 
+}
+.typing-dots span { 
+  width: 12px; 
+  height: 12px; 
+  background: #000; 
+  border-radius: 50%; 
+  animation: blink 1.4s infinite both; 
+}
+.typing-dots span:nth-child(2){ animation-delay:.2s; }
+.typing-dots span:nth-child(3){ animation-delay:.4s; }
+
+@keyframes blink { 
+  0%,80%,100%{opacity:0; transform:scale(.9);} 
+  40%{opacity:1; transform:scale(1.2);} 
+}
+
+/* Footer */
+footer { 
+  text-align: center; 
+  padding: 20px; 
+  color: #374151; 
+}
+footer a { 
+  color: #0066cc; 
+  text-decoration: none; 
+}
+footer a:hover { 
+  text-decoration: underline; 
+}
+
+/* ===== Logos fijos ===== */
+.logo-top-left {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  width: 200px;
+  height: auto;
+  z-index: 1000;
+}
+
+.logo-bottom-right {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  width: 140px;
+  height: auto;
+  z-index: 1000;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 600px) {
+  .logo-top-left,
+  .logo-bottom-right { width: 90px; }
+  .chat-area { grid-template-columns: 150px 1fr; }
+  .avatar-fixed { max-width: 150px; }
+  .bubble { font-size: 18px; padding: 18px 22px; }
+  .mic-img, .send-img { width: 30px; height: 30px; }
+}
