@@ -26,14 +26,14 @@ html, body {
 /* ===== Header ===== */
 .header { 
   display: flex; 
-  justify-content: flex-start; /* logo arriba izq */ 
+  justify-content: flex-start; 
   margin-bottom: 18px; 
 }
 
-/* ===== Chat layout: avatar fijo + columna de bocadillos ===== */
+/* ===== Chat layout ===== */
 .chat-area {
   display: grid; 
-  grid-template-columns: 250px 1fr; /* ancho para Rito */
+  grid-template-columns: 250px 1fr; 
   gap: 18px; 
   align-items: start;
   padding: 10px 10px 20px;
@@ -48,10 +48,10 @@ html, body {
 .avatar-fixed {
   width: 100%; 
   height: auto; 
-  max-width: 220px; /* controla tamaño máximo de Rito */
+  max-width: 220px; 
 }
 
-/* Columna de la derecha (bocadillos + input/botones) */
+/* Columna derecha */
 .bubble-column { 
   display: flex; 
   flex-direction: column; 
@@ -67,7 +67,7 @@ html, body {
   padding-right: 6px; 
 }
 
-/* ===== Bocadillos ===== */
+/* ===== Burbujas ===== */
 .bubble {
   position: relative; 
   padding: 12px 16px; 
@@ -78,10 +78,9 @@ html, body {
   border: 2px solid #cfd8e3; 
   background: #fff; 
   color: #333;
-  margin-left: 0;
 }
 
-/* Piquito apuntando al avatar (izquierda) */
+/* Piquito por defecto a la izquierda (para bot/compose) */
 .bubble::after {
   content:""; 
   position: absolute; 
@@ -103,17 +102,79 @@ html, body {
   border-right-color: #ffffff; 
 }
 
-/* Colores de bocadillo */
-.bubble.user { 
-  background: #eef8ff; 
-  border-color: #a7d8ff; 
+/* Primer bocadillo especial (compose) */
+.bubble.compose{
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 16px;
+  border-color: #cfd8e3;
+  background: #ffffff;
 }
-.bubble.user::after { border-right-color: #a7d8ff; }
-.bubble.user::before { border-right-color: #eef8ff; }
+.bubble.compose .text{
+  font-weight: 600;
+  color: #111;
+}
+.bubble.compose .meta-right{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mic-img{
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+.send-img{
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  cursor: pointer;
+  transition: transform .08s ease, opacity .2s ease;
+}
+.send-img:hover{ transform: translateY(-1px) }
+.send-img:active{ transform: translateY(0); opacity: .8 }
 
+.bubble.compose .meta-right time{
+  font-size: .86rem;
+  color: #555;
+  white-space: nowrap;
+}
+
+/* Burbujas por rol */
 .bubble.bot { 
   background: #ffffff; 
   border-color: #cfd8e3; 
+}
+
+.bubble.user { 
+  align-self: flex-end;               /* a la derecha */
+  background: #eef8ff; 
+  border-color: #a7d8ff; 
+}
+
+/* Piquito a la derecha para el usuario */
+.bubble.user::after, 
+.bubble.user::before {
+  left: auto;
+}
+.bubble.user::after {
+  right: -14px; 
+  border-right-color: transparent;
+  border-left-color: #a7d8ff;
+}
+.bubble.user::before {
+  right: -10px; 
+  border-right-color: transparent;
+  border-left-color: #eef8ff;
+}
+
+/* Timestamps dentro de burbuja normal */
+.bubble time{
+  display: block;
+  margin-top: 6px;
+  font-size: .8rem;
+  color: #6b7280;
 }
 
 /* ===== Input y botones ===== */
@@ -233,8 +294,3 @@ footer a:hover {
   .chat-area { grid-template-columns: 150px 1fr; }
   .avatar-fixed { max-width: 150px; }
 }
-
- 
-  
-
-
