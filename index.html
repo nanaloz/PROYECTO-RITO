@@ -110,6 +110,7 @@
       addMessage(inputValue, "user");
       input.value = "";
       document.getElementById("loadingDots").style.display = "flex";
+      setUIBusy(true);
 
       try {
         const response = await fetch("/api/chat", {
@@ -132,16 +133,31 @@
         addMessage("No se pudo conectar con la IA.", "bot");
       } finally {
         document.getElementById("loadingDots").style.display = "none";
+        setUIBusy(false);
       }
+    }
+
+    function formatTime(date=new Date()){
+      return date.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
     }
 
     function addMessage(text, sender) {
       const stack = document.getElementById("bubbleStack");
       const bubble = document.createElement("div");
       bubble.className = `bubble ${sender}`;
-      bubble.textContent = text;
+
+      const msg = document.createElement("div");
+      msg.textContent = text;
+
+      const t = document.createElement("time");
+      t.dateTime = new Date().toISOString();
+      t.textContent = formatTime();
+
+      bubble.appendChild(msg);
+      bubble.appendChild(t);
       stack.appendChild(bubble);
-      stack.scrollTop = stack.scrollHeight;
+
+      stack.parentElement.scrollTo({ top: stack.parentElement.scrollHeight, behavior: "smooth" });
     }
 
     function speak(text) {
@@ -162,10 +178,26 @@
         document.getElementById("btnDetenerVoz").classList.add("oculto");
       }
     }
+
+    function setUIBusy(busy){
+      document.querySelectorAll(".button-group-vertical button").forEach(b=>b.disabled = busy);
+      document.getElementById("textInput").disabled = busy;
+    }
+
+    // Enviar con Enter (Shift+Enter hace salto de línea)
+    document.getElementById("textInput").addEventListener("keydown", (e)=>{
+      if(e.key === "Enter" && !e.shiftKey){
+        e.preventDefault();
+        sendMessage();
+      }
+    });
   </script>
 </body>
 </html>
 
+
+ 
       
   
+
 
