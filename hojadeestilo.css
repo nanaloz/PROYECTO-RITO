@@ -238,6 +238,14 @@ input[type="text"] {
   40%{opacity:1; transform:scale(1.2);} 
 }
 
+#textInput {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 16px;
+  background: #eaf3ff;
+}
+
 /* Footer */
 footer { 
   text-align: center; 
@@ -280,3 +288,4 @@ footer a:hover {
   .bubble { font-size: 17px; padding: 18px 22px; }
   .mic-img, .send-img { width: 28px; height: 28px; }
 }
+
