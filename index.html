@@ -60,6 +60,9 @@
     let velocidad = 1;
     let vozSeleccionada = null;
 
+    // ====== NUEVO: persistencia del hilo entre turnos ======
+    let THREAD_ID = localStorage.getItem("openai_thread_id") || null; // NUEVO
+
     // ==== Configuración inicial
     document.addEventListener('DOMContentLoaded', () => {
       if (recognition) {
@@ -222,7 +225,7 @@
       }
     });
 
-    // ==== Enviar mensaje
+    // ==== Enviar mensaje (con threadId) ====
     async function sendMessage() {
       const input = document.getElementById("textInput");
       const inputValue = input.value.trim();
@@ -243,9 +246,20 @@
         const response = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: inputValue })
+          body: JSON.stringify({
+            message: inputValue,
+            threadId: THREAD_ID // NUEVO
+          })
         });
+
         const data = await response.json();
+
+        // ====== NUEVO: guardar threadId devuelto por el backend ======
+        if (data.threadId && data.threadId !== THREAD_ID) {
+          THREAD_ID = data.threadId;
+          localStorage.setItem("openai_thread_id", THREAD_ID);
+        }
+
         const respuestaTexto = data?.response
           ? (typeof data.response === "object"
               ? (data.response.message || data.response.content || JSON.stringify(data.response))
@@ -263,6 +277,14 @@
         setUIBusy(false);
       }
     }
+
+    // ====== (Opcional) Reiniciar la conversación desde el front ======
+    // Llama a resetThread() desde un botón si te interesa empezar de cero.
+    function resetThread(){ // NUEVO (opcional)
+      localStorage.removeItem("openai_thread_id");
+      THREAD_ID = null;
+      addBotAnswer("🗑️ Conversación reiniciada.");
+    }
   </script>
 </body>
 </html>
@@ -273,5 +295,6 @@
     
     
     
+
 
 
