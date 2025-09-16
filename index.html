@@ -24,12 +24,15 @@
         </div>
 
         <div class="bubble-column">
+          <!-- Pila de bocadillos -->
           <div id="bubbleStack" class="bubble-stack"></div>
 
+          <!-- Escribiendo… -->
           <div id="loadingDots" class="typing-dots" style="display:none;">
             <span></span><span></span><span></span>
           </div>
 
+          <!-- Botón detener voz -->
           <div class="button-group-vertical">
             <button id="btnDetenerVoz" class="boton-detener oculto" onclick="detenerVoz()">⏹ Detener voz</button>
           </div>
@@ -47,6 +50,9 @@
 
   <img src="img/logo nuevo.png" alt="Logo Nuevo" class="logo-bottom-right" />
 
+  <!-- ===================================================== -->
+  <!-- ===============  LÓGICA COMPLETA (OK)  ============= -->
+  <!-- ===================================================== -->
   <script>
     // ========= Reconocimiento de voz (STT) =========
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -56,23 +62,21 @@
 
     // ========= Síntesis de voz (TTS) =========
     let reproducirVoz = true;
-    let velocidad = 1;       // 1 = normal
+    let velocidad = 1;          // 1 = normal
     let vozSeleccionada = null;
-    let pitchMasculino = 0.85; // un poco más grave
-
-    // Preferencias de voces masculinas (ajusta los nombres si en tu equipo hay otras)
-    const MALE_VOICE_PREFERENCES = [
-      "Microsoft Pablo - Spanish (Spain)",
-      "Microsoft Raul - Spanish (Mexico)",
-      "Diego", "Jorge", "Juan", "Miguel", "Pablo", "Alberto",
-      "Male", "Hombre" // palabras clave por si el nombre lo indica
-    ];
 
     // ====== Persistencia del hilo entre turnos ======
     let THREAD_ID = localStorage.getItem("openai_thread_id") || null;
 
     document.addEventListener('DOMContentLoaded', () => {
-      // Config STT
+      // 0) Asegura que existe el stack
+      const stack = document.getElementById("bubbleStack");
+      if (!stack) {
+        console.error("No se encontró #bubbleStack");
+        return;
+      }
+
+      // 1) Config STT
       if (recognition) {
         recognition.continuous = false;
         recognition.interimResults = false;
@@ -81,5 +85,244 @@
         recognition.onstart = () => {
           micActivo = true;
           const micBtn = document.getElementById('micBtn');
-          if (micBtn) micBtn
+          if (micBtn) micBtn.classList.add('listening');
+        };
+        recognition.onend = () => {
+          micActivo = false;
+          const micBtn = document.getElementById('micBtn');
+          if (micBtn) micBtn.classList.remove('listening');
+        };
+        recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          const input = document.getElementById("textInput");
+          if (input) input.value = transcript;
+        };
+        recognition.onerror = (e) => {
+          console.error("Reconocimiento error:", e.error);
+          micActivo = false;
+          const micBtn = document.getElementById('micBtn');
+          if (micBtn) micBtn.classList.remove('listening');
+          if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+            alert('Permite el acceso al micrófono en tu navegador para usar el dictado.');
+          }
+        };
+      } else {
+        console.warn("Este navegador no soporta SpeechRecognition (prueba Chrome/Edge/Safari en HTTPS).");
+      }
 
+      // 2) Cargar voces para TTS (masculina)
+      cargarVoces();
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.onvoiceschanged = cargarVoces;
+      }
+
+      // 3) Crear SIEMPRE el bocadillo superior (input + micro + enviar)
+      addComposeBubble();
+
+      // 4) Enviar con Enter (Shift+Enter = salto de línea)
+      document.addEventListener("keydown", (e) => {
+        const input = document.getElementById("textInput");
+        if (document.activeElement === input && e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+    });
+
+    // ============ Funciones de UI (burbujas) ============
+    function addComposeBubble() {
+      const stack = document.getElementById("bubbleStack");
+
+      // Evita duplicados si recargas parciales
+      if (document.querySelector(".bubble.compose")) return;
+
+      const bubble = document.createElement("div");
+      bubble.className = "bubble compose bot";
+
+      // Columna izquierda: input
+      const left = document.createElement("div");
+      left.className = "text";
+      const input = document.createElement("input");
+      input.type = "text";
+      input.id = "textInput";
+      input.placeholder = "Escribe aquí tu pregunta";
+      input.style.width = "100%";
+      left.appendChild(input);
+
+      // Columna derecha: iconos
+      const right = document.createElement("div");
+      right.className = "meta-right";
+
+      const micImg = document.createElement("img");
+      micImg.id = "micBtn";
+      micImg.src = "img/micro.png";
+      micImg.alt = "Micrófono";
+      micImg.className = "mic-img";
+      micImg.title = "Hablar";
+      micImg.addEventListener("click", startRecognition);
+
+      const sendImg = document.createElement("img");
+      sendImg.id = "sendBtn";
+      sendImg.src = "img/enviar.png";
+      sendImg.alt = "Enviar";
+      sendImg.className = "send-img";
+      sendImg.title = "Enviar";
+      sendImg.addEventListener("click", sendMessage);
+
+      right.appendChild(micImg);
+      right.appendChild(sendImg);
+
+      bubble.appendChild(left);
+      bubble.appendChild(right);
+      stack.appendChild(bubble);
+    }
+
+    function addUserQuestion(text) {
+      if (!text || !text.trim()) return;
+      const stack = document.getElementById("bubbleStack");
+      const bubble = document.createElement("div");
+      bubble.className = "bubble user";
+      const msg = document.createElement("div");
+      msg.textContent = text.trim();
+      bubble.appendChild(msg);
+      stack.appendChild(bubble);
+      autoScroll();
+    }
+
+    function addBotAnswer(text) {
+      const stack = document.getElementById("bubbleStack");
+      const bubble = document.createElement("div");
+      bubble.className = "bubble bot";
+      const msg = document.createElement("div");
+      msg.textContent = text;
+      bubble.appendChild(msg);
+      stack.appendChild(bubble);
+      autoScroll();
+    }
+
+    function autoScroll() {
+      const stack = document.querySelector(".bubble-stack");
+      if (stack) stack.scrollTo({ top: stack.scrollHeight, behavior: "smooth" });
+    }
+
+    // ============ STT ============
+    async function startRecognition() {
+      if (!recognition) {
+        alert("Tu navegador no soporta reconocimiento de voz.");
+        return;
+      }
+      if (micActivo) {
+        recognition.stop();
+        return;
+      }
+      try {
+        if (navigator.mediaDevices?.getUserMedia) {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          stream.getTracks().forEach(t => t.stop()); // solo para pedir permiso
+        }
+        recognition.start();
+      } catch (err) {
+        console.error("No se pudo iniciar el micro:", err);
+        alert("No se pudo acceder al micrófono. Revisa permisos del navegador.");
+      }
+    }
+
+    // ============ TTS ============
+    function cargarVoces() {
+      if (!('speechSynthesis' in window)) return;
+      const voces = window.speechSynthesis.getVoices();
+      // Intenta una voz masculina en español, si no, la primera en español
+      const nombreVozMasculina = "Google español (España) Male"; // Cambia si tu navegador usa otro nombre
+      let v = voces.find(x => x.name === nombreVozMasculina)
+        || voces.find(x => x.lang?.startsWith("es") && /male|hombre|miguel|diego|pablo|jorge/i.test(x.name))
+        || voces.find(x => x.lang?.startsWith("es"));
+      vozSeleccionada = v || null;
+      // console.log("🎤 Voz:", vozSeleccionada?.name);
+    }
+
+    function detenerVoz() {
+      if (window.speechSynthesis?.speaking) {
+        window.speechSynthesis.cancel();
+        const btn = document.getElementById("btnDetenerVoz");
+        if (btn) btn.classList.add("oculto");
+      }
+    }
+
+    function speak(text) {
+      if (!reproducirVoz || !('speechSynthesis' in window) || !text) return;
+      const btn = document.getElementById("btnDetenerVoz");
+      const utt = new SpeechSynthesisUtterance(text);
+      utt.lang = "es-ES";
+      utt.rate = velocidad;
+      if (vozSeleccionada) utt.voice = vozSeleccionada;
+      utt.onstart = () => btn?.classList.remove("oculto");
+      utt.onend   = () => btn?.classList.add("oculto");
+      window.speechSynthesis.speak(utt);
+    }
+
+    function setUIBusy(busy) {
+      const input = document.getElementById("textInput");
+      if (input) input.disabled = busy;
+      const send = document.getElementById("sendBtn");
+      const mic  = document.getElementById("micBtn");
+      if (send) send.style.pointerEvents = busy ? "none" : "auto";
+      if (mic)  mic.style.pointerEvents  = busy ? "none" : "auto";
+    }
+
+    // ============ Enviar mensaje ============
+    async function sendMessage() {
+      const input = document.getElementById("textInput");
+      if (!input) return;
+      const inputValue = input.value.trim();
+      if (!inputValue) return;
+
+      if (recognition && micActivo) recognition.stop();
+
+      addUserQuestion(inputValue);
+
+      input.value = "";
+      const loader = document.getElementById("loadingDots");
+      if (loader) loader.style.display = "flex";
+      setUIBusy(true);
+
+      try {
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: inputValue, threadId: THREAD_ID })
+        });
+
+        const data = await response.json();
+
+        if (data.threadId && data.threadId !== THREAD_ID) {
+          THREAD_ID = data.threadId;
+          localStorage.setItem("openai_thread_id", THREAD_ID);
+        }
+
+        const respuestaTexto = data?.response
+          ? (typeof data.response === "object"
+              ? (data.response.message || data.response.content || JSON.stringify(data.response))
+              : String(data.response))
+          : "No se recibió una respuesta válida.";
+
+        addBotAnswer(respuestaTexto);
+        speak(respuestaTexto);
+
+      } catch (e) {
+        console.error(e);
+        addBotAnswer("No se pudo conectar con la IA.");
+      } finally {
+        if (loader) loader.style.display = "none";
+        setUIBusy(false);
+      }
+    }
+
+    // (Opcional) Resetear la conversación
+    function resetThread() {
+      localStorage.removeItem("openai_thread_id");
+      THREAD_ID = null;
+      addBotAnswer("🗑️ Conversación reiniciada.");
+    }
+  </script>
+</body>
+</html>
