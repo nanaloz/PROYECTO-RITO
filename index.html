@@ -102,10 +102,30 @@
       addComposeBubble();
     });
 
-    function cargarVoces() {
-      const voces = window.speechSynthesis.getVoices();
-      vozSeleccionada = voces.find(v => v.lang.startsWith("es")) || null;
-    }
+ function cargarVoces() {
+  const voces = window.speechSynthesis.getVoices();
+
+  // 🔎 Paso 1: busca una voz masculina en español
+  // Ajusta el nombre si encuentras una voz concreta en tu equipo.
+  const nombreVozMasculina = "Microsoft Pablo - Spanish (Spain)"; // ⬅️ pon aquí el nombre exacto si lo ves en consola
+
+  // Intenta primero la voz exacta
+  vozSeleccionada = voces.find(v => v.name === nombreVozMasculina);
+
+  // Si no existe, intenta encontrar cualquiera que parezca masculina por nombre
+  if (!vozSeleccionada) {
+    vozSeleccionada = voces.find(
+      v => v.lang.startsWith("es") && /male|hombre|man|miguel|diego|pablo/i.test(v.name)
+    );
+  }
+
+  // Si no encuentra ninguna, usa la primera voz en español como respaldo
+  if (!vozSeleccionada) {
+    vozSeleccionada = voces.find(v => v.lang.startsWith("es"));
+  }
+
+  console.log("🎤 Voz seleccionada:", vozSeleccionada?.name || "Ninguna encontrada");
+}
 
     // ==== ACTIVAR / DETENER MICRO ====
     async function startRecognition() {
@@ -289,5 +309,6 @@
   </script>
 </body>
 </html>
+
 
 
