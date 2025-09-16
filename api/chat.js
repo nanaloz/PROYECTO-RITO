@@ -1,7 +1,5 @@
-// api/chat.js
-// ⚡ OPTIMIZADO PARA RESPONDER MÁS RÁPIDO SIN CAMBIAR TU FRONTEND
-
-export default async function handler(req, res) { 
+// pages/api/chat.js
+export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Método no permitido" });
   }
@@ -12,9 +10,9 @@ export default async function handler(req, res) {
   }
 
   // === Ajustes de rendimiento ===
-  const POLL_INTERVAL_MS = 350;           // ↓ de 1200ms a 350ms
-  const MAX_WAIT_MS      = 20000;         // tope 20s para no bloquear
-  const MESSAGES_LIMIT_QS = "limit=1&order=desc"; // trae solo el último mensaje
+  const POLL_INTERVAL_MS = 350;            // ↓ de 1200 ms a 350 ms
+  const MAX_WAIT_MS      = 20000;          // tiempo máximo de espera 20 s
+  const MESSAGES_LIMIT_QS = "limit=1&order=desc"; // pide solo el último mensaje
 
   try {
     let threadId = incomingThreadId;
@@ -37,7 +35,7 @@ export default async function handler(req, res) {
       threadId = threadData.id;
     }
 
-    // 2) Añadir mensaje del usuario (role=user)
+    // 2) Añadir mensaje del usuario
     {
       const msgResp = await fetch(`https://api.openai.com/v1/threads/${threadId}/messages`, {
         method: "POST",
@@ -64,7 +62,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         assistant_id: process.env.OPENAI_ASSISTANT_ID,
-        // 👇 Pistas para que sea conciso y no se eternice
+        // 👇 Pista opcional para que el modelo no se extienda demasiado
         instructions: "Responde de forma breve y directa. Evita preámbulos innecesarios."
       })
     });
@@ -80,7 +78,6 @@ export default async function handler(req, res) {
     let status = runData.status || "queued";
 
     while (status === "queued" || status === "in_progress") {
-      // timeout de seguridad
       if (Date.now() - startedAt > MAX_WAIT_MS) {
         return res.status(504).json({ error: "Timeout esperando la respuesta del asistente." });
       }
@@ -102,9 +99,9 @@ export default async function handler(req, res) {
       }
       const checkData = await checkResp.json();
       status = checkData.status;
+
       if (status === "requires_action") {
-        // Si tu asistente usa tools, aquí atenderías las tool calls rápidamente.
-        // Para ir rápido, devolvemos un error controlado (o impleméntalo según tu caso).
+        // Si el asistente pide tools, aquí deberías gestionarlas
         return res.status(409).json({ error: "El asistente requiere acción (tools). Implementa tool calls si procede." });
       }
     }
@@ -126,7 +123,6 @@ export default async function handler(req, res) {
     }
     const msgsData = await msgsResp.json();
 
-    // Buscamos el último mensaje del asistente
     const assistantMessage = (msgsData.data || []).find((m) => m.role === "assistant");
     if (!assistantMessage || !assistantMessage.content) {
       return res.status(200).json({
@@ -147,7 +143,6 @@ export default async function handler(req, res) {
 }
 
 /* === Helpers === */
-
 function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
@@ -168,4 +163,3 @@ function extractTextFromAssistantMessage(msg) {
   if (typeof msg.content === "string") return msg.content;
   try { return JSON.stringify(msg.content); } catch { return String(msg.content); }
 }
-
