@@ -5,38 +5,71 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Chat con Voz</title>
   <link rel="stylesheet" href="hojadeestilo.css">
+
   <style>
-    /* Barra de composición fija abajo */
-    .compose-bar {
-      display: flex;
+    /* ====== Fijo inferior: bocadillo de composición ====== */
+    .compose-fixed{
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 16px;
+      width: min(900px, calc(100% - 32px)); /* igual que .container */
+      z-index: 1100;
+    }
+    .compose-bubble{
+      display: grid;
+      grid-template-columns: 1fr auto; /* input + acciones */
       align-items: center;
-      gap: 10px;
-      padding: 12px;
-      background: #fff;
-      border-top: 1px solid #ddd;
-      position: sticky; /* se queda al fondo del contenedor */
-      bottom: 0;
+      gap: 12px;
+      background: #ffffff;
+      border: 2px solid #cfd8e3;
+      border-radius: 14px;
+      padding: 10px 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.12);
+      position: relative;
     }
-    .compose-bar input {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 16px;
+    /* Piquito del bocadillo mirando a Rito (izquierda) */
+    .compose-bubble::after{
+      content:"";
+      position:absolute; left:-14px; bottom:18px; width:0; height:0;
+      border:10px solid transparent; border-right-color:#cfd8e3;
     }
-    .compose-bar img {
-      width: 32px;
-      height: 32px;
-      cursor: pointer;
-      transition: transform 0.15s ease;
+    .compose-bubble::before{
+      content:"";
+      position:absolute; left:-10px; bottom:20px; width:0; height:0;
+      border:8px solid transparent; border-right-color:#ffffff;
     }
-    .compose-bar img:hover {
-      transform: scale(1.1);
+
+    .compose-input{
+      width:100%;
+      border: none;
+      outline: none;
+      background:#eaf3ff;
+      padding:12px;
+      border-radius:8px;
+      font-size:16px;
     }
+
+    .compose-actions{
+      display:flex; align-items:center; gap:10px;
+    }
+    .compose-actions img{
+      width:36px; height:36px; cursor:pointer;
+      transition: transform .15s ease;
+      user-select:none;
+    }
+    .compose-actions img:hover{ transform: scale(1.08); }
+
     /* Feedback visual cuando el micro está activo */
-    .mic-img.listening { 
-      filter: drop-shadow(0 0 6px rgba(0,150,255,.7)); 
-      transform: scale(1.04); 
+    .mic-img.listening { filter: drop-shadow(0 0 6px rgba(0,150,255,.7)); transform: scale(1.06); }
+
+    /* Evita que el fijo inferior tape el scroll de mensajes */
+    .bubble-stack{ padding-bottom: 110px; } /* altura aproximada de la barra */
+
+    @media (max-width: 600px){
+      .compose-actions img{ width:32px; height:32px; }
+      .compose-fixed{ bottom: 12px; }
+      .bubble-stack{ padding-bottom: 120px; }
     }
   </style>
 </head>
@@ -44,10 +77,12 @@
   <div class="page-wrapper">
     <div class="container">
       
+      <!-- Logo proyecto ARRIBA IZQUIERDA -->
       <header class="header">
         <img src="img/logoproyecto.png" alt="Logo Proyecto" class="logo-top-left" />
       </header>
 
+      <!-- Zona de chat -->
       <section class="chat-area">
         <div class="avatar-wrap">
           <img src="img/rito.png" alt="Rito" class="avatar-fixed">
@@ -60,13 +95,6 @@
           <!-- Escribiendo… -->
           <div id="loadingDots" class="typing-dots" style="display:none;">
             <span></span><span></span><span></span>
-          </div>
-
-          <!-- Barra de composición abajo -->
-          <div class="compose-bar">
-            <input type="text" id="textInput" placeholder="Escribe aquí tu pregunta" />
-            <img src="img/micro.png" id="micBtn" class="mic-img" alt="Micrófono" title="Hablar" onclick="startRecognition()">
-            <img src="img/enviar.png" id="sendBtn" class="send-img" alt="Enviar" title="Enviar" onclick="sendMessage()">
           </div>
 
           <!-- Botón detener voz -->
@@ -85,14 +113,216 @@
     </footer>
   </div>
 
+  <!-- Logo nuevo ABAJO DERECHA -->
   <img src="img/logo nuevo.png" alt="Logo Nuevo" class="logo-bottom-right" />
 
-  <!-- Aquí va tu JS de reconocimiento, envío y síntesis de voz (ya lo tienes arriba) -->
+  <!-- ===== Bocadillo de composición FIJO ABAJO (input + micro + enviar) ===== -->
+  <div class="compose-fixed" aria-label="Barra de composición">
+    <div class="compose-bubble">
+      <input type="text" id="textInput" class="compose-input" placeholder="Escribe aquí tu pregunta">
+      <div class="compose-actions">
+        <img src="img/micro.png" id="micBtn" class="mic-img" alt="Hablar" title="Hablar" onclick="startRecognition()">
+        <img src="img/enviar.png" id="sendBtn" class="send-img" alt="Enviar" title="Enviar" onclick="sendMessage()">
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- ===============  LÓGICA COMPLETA (OK)  ============= -->
+  <!-- ===================================================== -->
   <script>
-    // 👉 Usa exactamente la lógica que ya escribiste para reconocimiento, TTS y sendMessage
-    // Solo cambian los selectores de micBtn, sendBtn e input que ahora están en la compose-bar
+    // ========= Reconocimiento de voz (STT) =========
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+
+    let micActivo = false;
+
+    // ========= Síntesis de voz (TTS) =========
+    let reproducirVoz = true;
+    let velocidad = 1;          // 1 = normal
+    let vozSeleccionada = null;
+
+    // ====== Persistencia del hilo entre turnos ======
+    let THREAD_ID = localStorage.getItem("openai_thread_id") || null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // 0) Mensaje de bienvenida inicial
+      addBotAnswer("¡Hola! Soy Rito. Hazme una pregunta y te respondo ;)");
+
+      // 1) Config STT
+      if (recognition) {
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = "es-ES";
+
+        recognition.onstart = () => {
+          micActivo = true;
+          document.getElementById('micBtn')?.classList.add('listening');
+        };
+        recognition.onend = () => {
+          micActivo = false;
+          document.getElementById('micBtn')?.classList.remove('listening');
+        };
+        recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          const input = document.getElementById("textInput");
+          if (input) input.value = transcript;
+        };
+        recognition.onerror = (e) => {
+          micActivo = false;
+          document.getElementById('micBtn')?.classList.remove('listening');
+          if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+            alert('Permite el acceso al micrófono en tu navegador para usar el dictado.');
+          }
+          console.error("Reconocimiento error:", e.error);
+        };
+      } else {
+        console.warn("Este navegador no soporta SpeechRecognition (prueba Chrome/Edge/Safari en HTTPS).");
+      }
+
+      // 2) Cargar voces para TTS
+      cargarVoces();
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.onvoiceschanged = cargarVoces;
+      }
+
+      // 3) Enviar con Enter (Shift+Enter = salto de línea)
+      document.addEventListener("keydown", (e) => {
+        const input = document.getElementById("textInput");
+        if (document.activeElement === input && e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+    });
+
+    // ============ Funciones de UI (burbujas) ============
+    function addUserQuestion(text) {
+      if (!text || !text.trim()) return;
+      const stack = document.getElementById("bubbleStack");
+      const bubble = document.createElement("div");
+      bubble.className = "bubble user";
+      const msg = document.createElement("div");
+      msg.textContent = text.trim();
+      bubble.appendChild(msg);
+      stack.appendChild(bubble);
+      autoScroll();
+    }
+
+    function addBotAnswer(text) {
+      const stack = document.getElementById("bubbleStack");
+      const bubble = document.createElement("div");
+      bubble.className = "bubble bot";
+      const msg = document.createElement("div");
+      msg.textContent = text;
+      bubble.appendChild(msg);
+      stack.appendChild(bubble);
+      autoScroll();
+    }
+
+    function autoScroll() {
+      const stack = document.querySelector(".bubble-stack");
+      if (stack) stack.scrollTo({ top: stack.scrollHeight, behavior: "smooth" });
+    }
+
+    // ============ STT ============
+    async function startRecognition() {
+      if (!recognition) {
+        alert("Tu navegador no soporta reconocimiento de voz.");
+        return;
+      }
+      if (micActivo) { recognition.stop(); return; }
+      try {
+        if (navigator.mediaDevices?.getUserMedia) {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          stream.getTracks().forEach(t => t.stop()); // solo para pedir permiso
+        }
+        recognition.start();
+      } catch (err) {
+        console.error("No se pudo iniciar el micro:", err);
+        alert("No se pudo acceder al micrófono. Revisa permisos del navegador.");
+      }
+    }
+
+    // ============ TTS ============
+    function cargarVoces() {
+      if (!('speechSynthesis' in window)) return;
+      const voces = window.speechSynthesis.getVoices();
+      const v = voces.find(x => x.lang?.startsWith("es") && /male|hombre|miguel|diego|pablo|jorge/i.test(x.name))
+               || voces.find(x => x.lang?.startsWith("es"));
+      vozSeleccionada = v || null;
+    }
+
+    function detenerVoz() {
+      if (window.speechSynthesis?.speaking) {
+        window.speechSynthesis.cancel();
+        document.getElementById("btnDetenerVoz")?.classList.add("oculto");
+      }
+    }
+
+    function speak(text) {
+      if (!reproducirVoz || !('speechSynthesis' in window) || !text) return;
+      const btn = document.getElementById("btnDetenerVoz");
+      const utt = new SpeechSynthesisUtterance(text);
+      utt.lang = "es-ES";
+      utt.rate = velocidad;
+      if (vozSeleccionada) utt.voice = vozSeleccionada;
+      utt.onstart = () => btn?.classList.remove("oculto");
+      utt.onend   = () => btn?.classList.add("oculto");
+      window.speechSynthesis.speak(utt);
+    }
+
+    // ============ Enviar mensaje ============
+    async function sendMessage() {
+      const input = document.getElementById("textInput");
+      if (!input) return;
+      const inputValue = input.value.trim();
+      if (!inputValue) return;
+
+      if (recognition && micActivo) recognition.stop();
+
+      addUserQuestion(inputValue);
+      input.value = "";
+      const loader = document.getElementById("loadingDots");
+      if (loader) loader.style.display = "flex";
+
+      try {
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: inputValue, threadId: THREAD_ID })
+        });
+
+        const data = await response.json();
+
+        if (data.threadId && data.threadId !== THREAD_ID) {
+          THREAD_ID = data.threadId;
+          localStorage.setItem("openai_thread_id", THREAD_ID);
+        }
+
+        const respuestaTexto = data?.response
+          ? (typeof data.response === "object"
+              ? (data.response.message || data.response.content || JSON.stringify(data.response))
+              : String(data.response))
+          : "No se recibió una respuesta válida.";
+
+        addBotAnswer(respuestaTexto);
+        speak(respuestaTexto);
+
+      } catch (e) {
+        console.error(e);
+        addBotAnswer("No se pudo conectar con la IA.");
+      } finally {
+        if (loader) loader.style.display = "none";
+      }
+    }
+
+    // (Opcional) Resetear la conversación
+    function resetThread() {
+      localStorage.removeItem("openai_thread_id");
+      THREAD_ID = null;
+      addBotAnswer("🗑️ Conversación reiniciada.");
+    }
   </script>
 </body>
 </html>
-
-
